@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Smarter Pet Feeder{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <nav class="nav">
+    <span class="nav-brand">SMARTER PET FEEDER</span>
+    <ul class="nav-links">
+      <li><a href="/" {% if request.path == '/' %}class="active"{% endif %}>Dashboard</a></li>
+      <li><a href="/analytics" {% if request.path == '/analytics' %}class="active"{% endif %}>Analytics</a></li>
+      <li><a href="/manage" {% if request.path == '/manage' %}class="active"{% endif %}>Manage</a></li>
+    </ul>
+  </nav>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
+

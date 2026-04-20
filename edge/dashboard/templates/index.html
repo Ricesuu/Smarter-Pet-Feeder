@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard — Smarter Pet Feeder{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Live Dashboard</h1>
+  <span class="live-badge">● LIVE</span>
+</div>
+
+<p class="sensor-label">SENSORS</p>
+<div class="card-grid">
+  <div class="card">
+    <span class="card-label">TEMPERATURE</span>
+    <span class="card-value" id="temperature">--</span>
+    <span class="card-unit">°C</span>
+  </div>
+  <div class="card">
+    <span class="card-label">HUMIDITY</span>
+    <span class="card-value" id="humidity">--</span>
+    <span class="card-unit">%</span>
+  </div>
+  <div class="card">
+    <span class="card-label">BOWL WEIGHT</span>
+    <span class="card-value" id="bowl-weight">--</span>
+    <span class="card-unit">g</span>
+  </div>
+  <div class="card">
+    <span class="card-label">CAT WEIGHT</span>
+    <span class="card-value" id="cat-weight">--</span>
+    <span class="card-unit">kg (simulated)</span>
+  </div>
+  <div class="card">
+    <span class="card-label">PET DETECTED</span>
+    <span class="card-value" id="ir-state">--</span>
+  </div>
+  <div class="card">
+    <span class="card-label">VISITS TODAY</span>
+    <span class="card-value" id="visits-today">--</span>
+    <span class="card-unit">RFID scans</span>
+  </div>
+</div>
+
+<p class="actuator-label">ACTUATORS</p>
+<div class="actuator-grid">
+  <div class="card">
+    <span class="card-label">FAN</span>
+    <span class="card-value" id="fan-state">--</span>
+  </div>
+  <div class="card">
+    <span class="card-label">SERVO</span>
+    <span class="card-value" id="servo-state">--</span>
+  </div>
+</div>
+<p class="last-updated">Last updated: <span id="last-updated">--</span></p>
+
+<section class="section">
+  <div class="section-header">
+    <h2 class="section-title">SENSOR HISTORY</h2>
+    <div class="tab-bar" id="metric-tabs">
+      <button class="tab active" data-metric="temperature">Temperature</button>
+      <button class="tab" data-metric="humidity">Humidity</button>
+      <button class="tab" data-metric="bowl_weight">Bowl Weight</button>
+      <button class="tab" data-metric="ir_state">IR / Pet</button>
+      <button class="tab" data-metric="fan_state">Fan</button>
+    </div>
+    <div class="tab-bar" id="time-tabs">
+      <button class="tab active" data-hours="1">1H</button>
+      <button class="tab" data-hours="6">6H</button>
+      <button class="tab" data-hours="12">12H</button>
+      <button class="tab" data-hours="24">24H</button>
+    </div>
+  </div>
+  <div class="chart-container">
+    <canvas id="sensorChart"></canvas>
+  </div>
+</section>
+
+<section class="section">
+  <h2 class="section-title">RECENT READINGS</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Temp (°C)</th>
+          <th>Humidity (%)</th>
+          <th>Bowl (g)</th>
+          <th>Pet</th>
+          <th>Fan</th>
+          <th>Servo</th>
+        </tr>
+      </thead>
+      <tbody id="history-tbody">
+        <tr><td colspan="7">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% endblock %}
+

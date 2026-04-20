@@ -1,0 +1,458 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f5f5f5;
+  color: #111;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ── NAV ─────────────────────────────────────────────────── */
+.nav {
+  background: #111;
+  border-bottom: 3px solid #CC2200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 56px;
+}
+
+.nav-brand {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+}
+
+.nav-links a {
+  display: block;
+  padding: 0 1.25rem;
+  height: 56px;
+  line-height: 56px;
+  color: #888;
+  text-decoration: none;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: color 0.15s;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;
+}
+
+.nav-links a:hover { color: #fff; }
+.nav-links a.active { color: #fff; border-bottom-color: #CC2200; }
+
+/* ── LAYOUT ──────────────────────────────────────────────── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: -0.01em;
+}
+
+.live-badge {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #CC2200;
+  font-weight: 600;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+/* ── SECTIONS ────────────────────────────────────────────── */
+.section { margin-bottom: 2.5rem; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #999;
+  flex: 1;
+  margin-bottom: 0.75rem;
+}
+
+.section-header .section-title { margin-bottom: 0; }
+.section-header + .chart-container { margin-top: 0; }
+
+/* ── SENSOR CARDS ────────────────────────────────────────── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1px;
+  background: #ddd;
+  border: 1px solid #ddd;
+  margin-bottom: 0.5rem;
+}
+
+.sensor-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #bbb;
+  margin: 0 0 0.25rem;
+}
+
+.actuator-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #bbb;
+  margin: 1.5rem 0 0.25rem;
+}
+
+.actuator-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 420px;
+  gap: 1px;
+  background: #ddd;
+  border: 1px solid #ddd;
+  margin-bottom: 0.5rem;
+}
+
+.card {
+  background: #fff;
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.card-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #999;
+}
+
+.card-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #111;
+  line-height: 1;
+}
+
+.card-unit {
+  font-size: 0.78rem;
+  color: #aaa;
+}
+
+.last-updated {
+  font-size: 0.72rem;
+  color: #bbb;
+  margin-bottom: 2rem;
+}
+
+/* ── TABS ────────────────────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  border: 1px solid #ddd;
+}
+
+.tab {
+  padding: 0.32rem 0.85rem;
+  border: none;
+  border-right: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #777;
+  transition: background 0.1s, color 0.1s;
+}
+
+.tab:last-child { border-right: none; }
+.tab:hover { background: #f0f0f0; color: #111; }
+.tab.active { background: #111; color: #fff; }
+
+/* ── CHART ───────────────────────────────────────────────── */
+.chart-container {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-top: none;
+  padding: 1.5rem;
+}
+
+.section-header + .chart-container { border-top: 1px solid #ddd; margin-top: 0.75rem; }
+
+/* ── TABLES ──────────────────────────────────────────────── */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid #ddd;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 0.85rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.6rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.data-table th {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #999;
+  background: #fafafa;
+  border-bottom: 1px solid #ddd;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover td { background: #fafafa; }
+
+/* ── STATS GRID ──────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: #ddd;
+  border: 1px solid #ddd;
+}
+
+.stat-card {
+  background: #fff;
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-card--accent { border-left: 3px solid #CC2200; }
+
+.stat-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #999;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111;
+  line-height: 1;
+}
+
+.stat-unit {
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+/* ── MANAGE PAGE ─────────────────────────────────────────── */
+.manage-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* grid children stretch to equal row height */
+.manage-grid > .section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
+/* prevent section-title (which has global flex:1) from stealing space in flex column */
+.manage-grid > .section > .section-title {
+  flex: none;
+}
+
+.manage-grid > .section .settings-form {
+  flex: 1;
+}
+
+/* reusable white panel — same look as .settings-form */
+.panel {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  padding: 1.5rem;
+}
+
+.cmd-bar {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #CC2200;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.control-group {
+  border: 1px solid #e8e8e8;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  background: #fff;
+}
+
+.control-group:last-child { margin-bottom: 0; }
+
+.control-group-label {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 0.75rem;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ── BUTTONS ─────────────────────────────────────────────── */
+.btn {
+  padding: 0.5rem 1.1rem;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: #fff;
+  color: #333;
+  letter-spacing: 0.03em;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.btn:hover { background: #f0f0f0; border-color: #bbb; }
+
+.btn-primary { background: #111; color: #fff; border-color: #111; }
+.btn-primary:hover { background: #333; border-color: #333; }
+
+.btn-success { background: #1a6e2e; color: #fff; border-color: #1a6e2e; }
+.btn-success:hover { background: #145623; border-color: #145623; }
+
+.btn-danger { background: #CC2200; color: #fff; border-color: #CC2200; }
+.btn-danger:hover { background: #a81d00; border-color: #a81d00; }
+
+/* ── SETTINGS FORM ───────────────────────────────────────── */
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  padding: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-group label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-hint {
+  font-size: 0.73rem;
+  color: #aaa;
+}
+
+.form-group input,
+.form-control {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  background: #fff;
+  color: #111;
+  max-width: 260px;
+}
+
+.form-group input:focus,
+.form-control:focus {
+  outline: none;
+  border-color: #111;
+}
+
+/* ── RESPONSE TEXT ───────────────────────────────────────── */
+.response-text {
+  font-size: 0.8rem;
+  color: #CC2200;
+  min-height: 1.2rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+/* ── RESPONSIVE ──────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .card-grid { grid-template-columns: repeat(3, 1fr); }
+  .actuator-grid { max-width: 100%; grid-template-columns: repeat(2, 1fr); }
+  .manage-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+  .actuator-grid { grid-template-columns: repeat(2, 1fr); }
+  .nav-brand { display: none; }
+  .container { padding: 1.25rem 1rem; }
+}
+
+
