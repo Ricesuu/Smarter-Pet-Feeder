@@ -46,8 +46,6 @@ It uses a feeding-session flow (IR detect -> pet identify -> calculate portion -
 ```text
 SmarterPetFeeder/
 ├── README.md
-├── flowcharts.md
-├── portion_calc_flowchart.md
 ├── arduino/
 │   ├── smartPetFeeder.ino
 │   └── componentTable.md
@@ -65,9 +63,7 @@ SmarterPetFeeder/
     │   └── scheduler.py
     ├── database/
     │   ├── db.py
-    │   ├── schema.sql
-    │   ├── migration_pet_profiles.sql
-    │   └── migration_ideal_weight.sql
+    │   └── schema.sql
     └── dashboard/
         ├── app.py
         ├── templates/
@@ -86,12 +82,15 @@ pip install -r requirements.txt
 
 Set `config.py` as needed (serial port, DB credentials, Flask host/port).
 
-Initialize DB schema and run migrations:
-
-```bash
-mysql -u root -p petfeeder < database/schema.sql
-mysql -u root -p petfeeder < database/migration_pet_profiles.sql
-mysql -u root -p petfeeder < database/migration_ideal_weight.sql
+Initialize DB schema:
+Open **phpMyAdmin**, then create or select the `petfeeder` database and run the SQL code from `database/schema.sql` using the **SQL** tab.
+```text
+1. Open phpMyAdmin in your browser
+2. Create or select database: petfeeder
+3. Click the SQL tab
+4. Copy all contents from database/schema.sql
+5. Paste the SQL code
+6. Click Run
 ```
 
 Start the system:
