@@ -1,11 +1,14 @@
-// ─── Utilities ───────────────────────────────────────────────────────────────
+// ===========Utility Functions===========
+// Returns an element by ID
 function $(id) { return document.getElementById(id); }
 
+// Sets textContent if the element exists
 function setText(id, value) {
   const el = $(id);
   if (el) el.textContent = value;
 }
 
+// Sends POST JSON requests and returns parsed JSON response
 function postJson(url, body) {
   return fetch(url, {
     method: 'POST',
@@ -14,15 +17,18 @@ function postJson(url, body) {
   }).then(r => r.json());
 }
 
+// Formats time as HH:MM:SS
 function fmtTime(ts) {
   return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
+// Formats date/time for compact table display
 function fmtDatetime(ts) {
   return new Date(ts).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-// ─── Command sender (shared by Dashboard + Manage) ────────────────────────────
+// ===========Shared Command Function===========
+// Sends manual commands from Dashboard/Manage and shows UI feedback
 function sendCmd(cmd) {
   postJson('/api/command', { command: cmd })
     .then(data => {
@@ -49,11 +55,12 @@ function sendCmd(cmd) {
     });
 }
 
-// ─── DASHBOARD PAGE ───────────────────────────────────────────────────────────
+// ===========Dashboard State===========
 let sensorChart = null;
 let currentMetric = 'temperature';
 let currentHours = 1;
 
+// ===========Dashboard Metric Config===========
 const metricConfig = {
   temperature: { label: 'Temperature', color: '#CC2200', yMin: 0,  yMax: 50,   stepSize: 5,   yTitle: '°C',    binary: false },
   humidity:    { label: 'Humidity',    color: '#0066CC', yMin: 0,  yMax: 100,  stepSize: 10,  yTitle: '%',     binary: false },
@@ -62,6 +69,8 @@ const metricConfig = {
   fan_state:   { label: 'Fan',         color: '#E07B00', yMin: 0,  yMax: 1,    stepSize: 1,   yTitle: 'Fan',   binary: true  }
 };
 
+// ===========Dashboard Functions===========
+// Fetches latest sensor packet and updates live cards
 function fetchLatest() {
   fetch('/api/latest')
     .then(r => r.json())
@@ -79,6 +88,7 @@ function fetchLatest() {
     });
 }
 
+// Buckets readings into 5-minute intervals (keeps latest value per bucket)
 function downsample5min(rows) {
   const buckets = {};
   rows.forEach(r => {
@@ -90,6 +100,7 @@ function downsample5min(rows) {
   return Object.values(buckets);
 }
 
+// Fetches historical sensor data and redraws chart
 function fetchHistory(hours) {
   fetch(`/api/history?hours=${hours}`)
     .then(r => r.json())
@@ -98,12 +109,14 @@ function fetchHistory(hours) {
     });
 }
 
+// Fetches latest table readings for the dashboard log
 function fetchLatestReadings() {
   fetch('/api/latest-readings?limit=10')
     .then(r => r.json())
     .then(rows => renderHistoryTable(rows));
 }
 
+// Renders metric chart with dynamic axis configuration
 function renderChart(rows, metric) {
   const cfg = metricConfig[metric];
 
@@ -124,9 +137,6 @@ function renderChart(rows, metric) {
         ticks: { font: { family: 'Inter', size: 11 }, stepSize: cfg.stepSize },
         grid: { color: '#eee' }
       };
-
-  const stepSizeMap = { 1: 5, 6: 30, 12: 60, 24: 120 };
-  const xStepSize = stepSizeMap[currentHours] || Math.ceil(currentHours * 60 / 12 / 5) * 5;
 
   let xMin, xMax;
   if (rows.length > 0) {
@@ -205,6 +215,7 @@ function renderChart(rows, metric) {
   sensorChart._isBinary = cfg.binary;
 }
 
+// Renders latest-readings table below the chart
 function renderHistoryTable(rows) {
   const tbody = $('history-tbody');
   if (!tbody) return;
@@ -222,6 +233,7 @@ function renderHistoryTable(rows) {
     : '<tr><td colspan="7">No data yet.</td></tr>';
 }
 
+// Initializes dashboard polling and metric/time tab events
 function initDashboard() {
   fetchLatest();
   setInterval(fetchLatest, 3000);
@@ -251,7 +263,8 @@ function initDashboard() {
   });
 }
 
-// ─── ANALYTICS PAGE ───────────────────────────────────────────────────────────
+// ===========Analytics Functions===========
+// Fetches analytics summary stats for selected range
 function fetchAnalytics(hours) {
   fetch(`/api/analytics?hours=${hours}`)
     .then(r => r.json())
@@ -269,6 +282,7 @@ function fetchAnalytics(hours) {
     });
 }
 
+// Fetches recent feed events table
 function fetchFeedLog() {
   fetch('/api/feedlog?limit=20')
     .then(r => r.json())
@@ -288,6 +302,7 @@ function fetchFeedLog() {
     });
 }
 
+// Initializes analytics page interactions
 function initAnalytics() {
   let activeHours = 24;
   fetchAnalytics(activeHours);
@@ -303,7 +318,8 @@ function initAnalytics() {
   });
 }
 
-// ─── MANAGE PAGE ──────────────────────────────────────────────────────────────
+// ===========Manage Functions===========
+// Loads configured feeding schedules
 function loadSchedules() {
   fetch('/api/schedules')
     .then(r => r.json())
@@ -329,6 +345,7 @@ function loadSchedules() {
     });
 }
 
+// Adds a new feeding schedule
 function addSchedule() {
   const input = $('new-schedule-time');
   const status = $('schedule-status');
@@ -351,12 +368,14 @@ function addSchedule() {
     });
 }
 
+// Deletes a schedule entry then refreshes list
 function deleteSchedule(id) {
   fetch(`/api/schedules/${id}`, { method: 'DELETE' })
     .then(() => loadSchedules());
 }
 
-// ─── PET PROFILES ─────────────────────────────────────────────────────────────
+// ===========Pet Profile Functions===========
+// Loads pet profiles with weight trend and predicted next portion
 function loadPets() {
   fetch('/api/pets')
     .then(r => r.json())
@@ -364,14 +383,14 @@ function loadPets() {
       const tbody = $('pets-tbody');
       if (!tbody) return;
       if (!pets.length) {
-        tbody.innerHTML = '<tr><td colspan="6">No pets added yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8">No pets added yet.</td></tr>';
         return;
       }
       tbody.innerHTML = pets.map(p => `
         <tr>
           <td>${p.name}</td>
           <td>${p.rfid_uid || '—'}</td>
-          <td>${p.weight_kg != null ? p.weight_kg.toFixed(2) + ' kg' : '—'}</td>
+          <td>${p.avg_weight != null ? p.avg_weight.toFixed(2) + ' kg' : '—'}</td>
           <td>
             <input type="number" step="0.1" min="1" max="200"
               value="${p.food_per_kg != null ? p.food_per_kg : 60}"
@@ -379,7 +398,16 @@ function loadPets() {
               onchange="saveFoodPerKg(${p.id}, this.value)" />
             <span style="font-size:0.78rem;color:#aaa;">g/kg</span>
           </td>
-          <td>${p.calc_portion != null ? p.calc_portion.toFixed(1) + ' g' : '—'}</td>
+          <td>
+            <input type="number" step="0.1" min="0" max="30"
+              value="${p.ideal_weight_kg != null ? p.ideal_weight_kg : ''}"
+              placeholder="—"
+              style="width:70px;padding:0.25rem 0.4rem;border:1px solid #ccc;font-size:0.85rem;"
+              onchange="saveIdealWeight(${p.id}, this.value)" />
+            <span style="font-size:0.78rem;color:#aaa;">kg</span>
+          </td>
+          <td style="font-size:1.1rem;">${p.weight_trend || '—'}</td>
+          <td>${p.predicted_portion != null ? p.predicted_portion.toFixed(1) + ' g' : '—'}</td>
           <td>
             <button class="btn btn-danger" style="padding:0.2rem 0.6rem;font-size:0.75rem;"
               onclick="deletePet(${p.id})">Remove</button>
@@ -388,11 +416,20 @@ function loadPets() {
     });
 }
 
+// Saves grams-per-kg value for a pet profile
 function saveFoodPerKg(petId, value) {
   postJson(`/api/pets/${petId}`, { food_per_kg: parseFloat(value) })
     .then(() => loadPets());
 }
 
+// Saves/clears ideal target weight for a pet profile
+function saveIdealWeight(petId, value) {
+  const v = parseFloat(value);
+  postJson(`/api/pets/${petId}`, { ideal_weight_kg: isNaN(v) || v <= 0 ? 0 : v })
+    .then(() => loadPets());
+}
+
+// Adds a new pet profile
 function addPet() {
   const nameEl = $('new-pet-name');
   const rfidEl = $('new-pet-rfid');
@@ -417,12 +454,14 @@ function addPet() {
     });
 }
 
+// Deletes pet profile after user confirmation
 function deletePet(id) {
   if (!confirm('Remove this pet profile?')) return;
   fetch(`/api/pets/${id}`, { method: 'DELETE' })
     .then(() => loadPets());
 }
 
+// Initializes manage page forms and profile/schedule data
 function initManage() {
   const form = $('settings-form');
   if (form) {
@@ -444,7 +483,8 @@ function initManage() {
   loadPets();
 }
 
-// ─── Page router ─────────────────────────────────────────────────────────────
+// ===========Page Router===========
+// Boots only the script modules needed by the current page
 if ($('sensorChart'))  initDashboard();
 if ($('stats-grid'))   initAnalytics();
 if ($('settings-form') && !$('sensorChart')) initManage();

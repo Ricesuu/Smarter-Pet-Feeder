@@ -1,3 +1,4 @@
+# ==========Import Statements==========
 import serial
 import time
 from database.db import insertSensorReading, insertRfidEvent, getPetByRfid, popPendingCommands
@@ -5,9 +6,11 @@ from automation.rules import evaluateRules
 from automation.feedingSession import getSession, updateCatWeight
 import config
 
+# ===========Serial Bridge State===========
 ser = None
 
-# --- Message parser ---
+# ===========Message Parser Functions===========
+# Parses one raw serial line into typed message dictionary
 
 def parseMessage(raw):
     if not raw:
@@ -35,19 +38,21 @@ def parseMessage(raw):
         return {'type': 'FEED_DONE', 'payload': {}}
     return None
 
+# Parses scalar values from string tokens
 def _parseValue(val):
     try:
         return float(val) if '.' in val else int(val)
     except ValueError:
         return val
 
-# --- Serial bridge ---
-
+# ===========Serial Bridge Functions===========
+# Opens serial connection to Arduino
 def connect():
     global ser
     ser = serial.Serial(config.SERIAL_PORT, config.SERIAL_BAUD, timeout=1)
     time.sleep(2)
 
+# Main bridge loop: dispatch queued commands and process incoming messages
 def run():
     connect()
     print(f"[SerialBridge] Running on {config.SERIAL_PORT} at {config.SERIAL_BAUD} baud")
@@ -65,6 +70,7 @@ def run():
             print(f"[SerialBridge] Error: {e}")
             time.sleep(1)
 
+# Routes parsed messages to database updates and automation/session handlers
 def handleMessage(raw):
     msg = parseMessage(raw)
     if not msg:
@@ -98,6 +104,7 @@ def handleMessage(raw):
         if session:
             session.onFeedDone()
 
+# Sends one command line to Arduino over serial
 def sendCommand(cmd):
     if ser and ser.is_open:
         ser.write((cmd + '\n').encode('utf-8'))

@@ -1,6 +1,19 @@
+"""
+db.py - Data access layer for Smarter Pet Feeder
+
+Contains all database operations for:
+  - Sensor/RFID/feed logging
+  - Analytics and dashboard queries
+  - Pet profile and schedule management
+  - Portion prediction support and command queue
+"""
+
+# ==========Import Statements==========
 import pymysql
 import config
 
+# ===========Connection Helper===========
+# Returns a new DB connection for each operation
 def getConnection():
     return pymysql.connect(
         host=config.DB_HOST,
@@ -11,7 +24,8 @@ def getConnection():
         cursorclass=pymysql.cursors.Cursor
     )
 
-# --- Inserts ---
+# ===========Insert Operations===========
+# Inserts one sensor DATA packet row
 
 def insertSensorReading(data):
     conn = getConnection()
@@ -23,6 +37,7 @@ def insertSensorReading(data):
     conn.commit()
     conn.close()
 
+# Inserts one RFID scan event, optionally linked to a known pet
 def insertRfidEvent(uid, petId=None):
     conn = getConnection()
     cur = conn.cursor()
@@ -30,17 +45,19 @@ def insertRfidEvent(uid, petId=None):
     conn.commit()
     conn.close()
 
-def logFeedEvent(petId, trigger, portion_grams=None, bowl_before=None, bowl_after=None):
+# Inserts a feed event row (created at feed start; finalized later with actuals)
+def logFeedEvent(petId, trigger, portion_grams=None, bowl_before=None, bowl_after=None, weight_kg_at_feed=None):
     conn = getConnection()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO feed_log (pet_id, `trigger`, portion_grams, bowl_before, bowl_after) VALUES (%s, %s, %s, %s, %s)",
-        (petId, trigger, portion_grams, bowl_before, bowl_after)
+        "INSERT INTO feed_log (pet_id, `trigger`, portion_grams, bowl_before, bowl_after, weight_kg_at_feed) VALUES (%s, %s, %s, %s, %s, %s)",
+        (petId, trigger, portion_grams, bowl_before, bowl_after, weight_kg_at_feed)
     )
     conn.commit()
     conn.close()
 
-# --- Queries ---
+# ===========Sensor and Analytics Queries===========
+# Returns most recent sensor reading row
 
 def getLatestReading():
     conn = getConnection()
@@ -50,6 +67,7 @@ def getLatestReading():
     conn.close()
     return row
 
+# Returns sensor readings for last N hours, optionally limited
 def getHistoryByHours(hours=24, limit=None):
     conn = getConnection()
     cur = conn.cursor()
@@ -63,6 +81,7 @@ def getHistoryByHours(hours=24, limit=None):
     conn.close()
     return rows
 
+# Returns latest sensor readings ordered by id descending
 def getLatestReadings(limit=10):
     conn = getConnection()
     cur = conn.cursor()
@@ -71,6 +90,7 @@ def getLatestReadings(limit=10):
     conn.close()
     return rows
 
+# Returns count of readings in selected window
 def getTotalReadings(hours=24):
     conn = getConnection()
     cur = conn.cursor()
@@ -82,6 +102,7 @@ def getTotalReadings(hours=24):
     conn.close()
     return int(count)
 
+# Returns min/max/avg temp/humidity summary
 def getAnalyticsSummary(hours=24):
     conn = getConnection()
     cur = conn.cursor()
@@ -97,6 +118,7 @@ def getAnalyticsSummary(hours=24):
     keys = ['temp_avg','temp_min','temp_max','hum_avg','hum_min','hum_max']
     return dict(zip(keys, row)) if row else {}
 
+# Returns extended analytics for dashboard cards
 def getAnalyticsExtended(hours=24):
     conn = getConnection()
     cur = conn.cursor()
@@ -146,6 +168,7 @@ def getAnalyticsExtended(hours=24):
         'feed_avg_per_day': feed_avg_per_day
     }
 
+# Returns recent feed log rows with joined pet names
 def getFeedLog(limit=20):
     conn = getConnection()
     cur = conn.cursor()
@@ -159,6 +182,8 @@ def getFeedLog(limit=20):
     conn.close()
     return rows
 
+# ===========Settings and Pet Profile Queries===========
+# Returns all key/value settings as dict
 def getSettings():
     conn = getConnection()
     cur = conn.cursor()
@@ -167,6 +192,7 @@ def getSettings():
     conn.close()
     return dict(rows)
 
+# Updates one setting key with new value
 def updateSetting(key, value):
     conn = getConnection()
     cur = conn.cursor()
@@ -174,37 +200,41 @@ def updateSetting(key, value):
     conn.commit()
     conn.close()
 
+# Looks up pet profile by RFID UID
 def getPetByRfid(uid):
     conn = getConnection()
     cur = conn.cursor()
-    cur.execute("SELECT id, name, rfid_uid, camera_label, pot_target, weight_kg, food_per_kg FROM pets WHERE rfid_uid = %s", (uid,))
+    cur.execute("SELECT id, name, rfid_uid, camera_label, pot_target, weight_kg, food_per_kg, ideal_weight_kg FROM pets WHERE rfid_uid = %s", (uid,))
     row = cur.fetchone()
     conn.close()
     if not row:
         return None
-    keys = ['id','name','rfid_uid','camera_label','pot_target','weight_kg','food_per_kg']
+    keys = ['id','name','rfid_uid','camera_label','pot_target','weight_kg','food_per_kg','ideal_weight_kg']
     return dict(zip(keys, row))
 
+# Looks up pet profile by camera label
 def getPetByCameraLabel(label):
     conn = getConnection()
     cur = conn.cursor()
-    cur.execute("SELECT id, name, rfid_uid, camera_label, pot_target, weight_kg, food_per_kg FROM pets WHERE camera_label = %s", (label,))
+    cur.execute("SELECT id, name, rfid_uid, camera_label, pot_target, weight_kg, food_per_kg, ideal_weight_kg FROM pets WHERE camera_label = %s", (label,))
     row = cur.fetchone()
     conn.close()
     if not row:
         return None
-    keys = ['id','name','rfid_uid','camera_label','pot_target','weight_kg','food_per_kg']
+    keys = ['id','name','rfid_uid','camera_label','pot_target','weight_kg','food_per_kg','ideal_weight_kg']
     return dict(zip(keys, row))
 
+# Returns all pet profiles
 def getAllPets():
     conn = getConnection()
     cur = conn.cursor()
-    cur.execute("SELECT id, name, rfid_uid, camera_label, pot_target, weight_kg, food_per_kg FROM pets")
+    cur.execute("SELECT id, name, rfid_uid, camera_label, pot_target, weight_kg, food_per_kg, ideal_weight_kg FROM pets")
     rows = cur.fetchall()
     conn.close()
-    keys = ['id','name','rfid_uid','camera_label','pot_target','weight_kg','food_per_kg']
+    keys = ['id','name','rfid_uid','camera_label','pot_target','weight_kg','food_per_kg','ideal_weight_kg']
     return [dict(zip(keys, r)) for r in rows]
 
+# Inserts a new pet profile
 def addPet(name, rfid_uid=None):
     conn = getConnection()
     cur = conn.cursor()
@@ -214,6 +244,7 @@ def addPet(name, rfid_uid=None):
     conn.close()
     return new_id
 
+# Deletes pet profile by ID
 def deletePet(pet_id):
     conn = getConnection()
     cur = conn.cursor()
@@ -221,7 +252,11 @@ def deletePet(pet_id):
     conn.commit()
     conn.close()
 
-def updatePet(pet_id, name=None, rfid_uid=None, food_per_kg=None):
+# Sentinel for "field not provided" in partial pet updates
+_NOTSET = object()
+
+# Updates editable pet profile fields
+def updatePet(pet_id, name=None, rfid_uid=None, food_per_kg=None, ideal_weight_kg=_NOTSET):
     conn = getConnection()
     cur = conn.cursor()
     if name is not None:
@@ -230,9 +265,13 @@ def updatePet(pet_id, name=None, rfid_uid=None, food_per_kg=None):
         cur.execute("UPDATE pets SET rfid_uid=%s WHERE id=%s", (rfid_uid or None, pet_id))
     if food_per_kg is not None:
         cur.execute("UPDATE pets SET food_per_kg=%s WHERE id=%s", (food_per_kg, pet_id))
+    if ideal_weight_kg is not _NOTSET:
+        val = float(ideal_weight_kg) if ideal_weight_kg else None
+        cur.execute("UPDATE pets SET ideal_weight_kg=%s WHERE id=%s", (val, pet_id))
     conn.commit()
     conn.close()
 
+# Updates latest known pet weight
 def updatePetWeight(pet_id, weight_kg):
     conn = getConnection()
     cur = conn.cursor()
@@ -240,6 +279,7 @@ def updatePetWeight(pet_id, weight_kg):
     conn.commit()
     conn.close()
 
+# Returns RFID event stats for selected window
 def getRfidStats(hours=24):
     conn = getConnection()
     cur = conn.cursor()
@@ -253,6 +293,7 @@ def getRfidStats(hours=24):
     avg_per_day = round(total / days, 1) if days > 0 else 0
     return {'rfid_total': int(total), 'rfid_avg_per_day': avg_per_day}
 
+# Returns number of RFID scans for today
 def getRfidToday():
     conn = getConnection()
     cur = conn.cursor()
@@ -261,6 +302,8 @@ def getRfidToday():
     conn.close()
     return int(count)
 
+# ===========Schedule Queries===========
+# Returns all schedules (enabled + disabled) for manage page
 def getAllSchedules():
     conn = getConnection()
     cur = conn.cursor()
@@ -269,6 +312,7 @@ def getAllSchedules():
     conn.close()
     return [{'id': r[0], 'time_of_day': r[1], 'enabled': bool(r[2]), 'last_triggered': str(r[3]) if r[3] else None} for r in rows]
 
+# Stamps a schedule row when it triggers
 def touchScheduleLastTriggered(schedule_id):
     conn = getConnection()
     cur = conn.cursor()
@@ -276,6 +320,7 @@ def touchScheduleLastTriggered(schedule_id):
     conn.commit()
     conn.close()
 
+# Adds new enabled schedule
 def addSchedule(time_of_day):
     conn = getConnection()
     cur = conn.cursor()
@@ -285,6 +330,7 @@ def addSchedule(time_of_day):
     conn.close()
     return new_id
 
+# Deletes a schedule row
 def deleteSchedule(schedule_id):
     conn = getConnection()
     cur = conn.cursor()
@@ -292,6 +338,7 @@ def deleteSchedule(schedule_id):
     conn.commit()
     conn.close()
 
+# Returns only enabled schedules used by scheduler thread
 def getFeedSchedules():
     conn = getConnection()
     cur = conn.cursor()
@@ -300,48 +347,89 @@ def getFeedSchedules():
     conn.close()
     return [{'id': r[0], 'time_of_day': r[1], 'enabled': r[2]} for r in rows]
 
+# ===========Portion Calculation Helpers===========
+# Returns latest N logged weights at feeding time for one pet
+def getWeightHistory(pet_id, limit=5):
+    """Return the last N weight_kg_at_feed values for a pet (newest first)."""
+    conn = getConnection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT weight_kg_at_feed FROM feed_log
+        WHERE pet_id = %s AND weight_kg_at_feed IS NOT NULL AND weight_kg_at_feed > 0
+        ORDER BY `timestamp` DESC LIMIT %s
+        """,
+        (pet_id, limit)
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return [float(r[0]) for r in rows]
+
+# Calculates predicted next portion with history + ideal-weight adjustment
 def calcIdealPortion(pet_id, cat_weight_sim=512):
     """
-    Calculate ideal portion (grams) for a pet.
+    Calculate the ideal portion (grams) for a pet's next feeding.
 
-    Priority:
-    1. Pet profile: if weight_kg and food_per_kg are set → portion = weight_kg * food_per_kg
-    2. Historical: if ≥3 valid feed_log records → rolling average of last 5
-    3. Fallback: formula from potentiometer ADC (30 + scaled 0–50g)
+    Weight resolution (newest first):
+      1. Average of last 5 weight_kg_at_feed entries in feed_log (≥3 required)
+      2. pets.weight_kg (single last-known value)
+      3. ADC fallback: 30 + (cat_weight_sim / 1023) × 50 g
+
+    Portion calculation:
+      - If ideal_weight_kg is set:
+          base = ideal_weight_kg × food_per_kg
+          trend_factor = clamp(ideal_weight_kg / avg_weight, 0.75, 1.25)
+          portion = base × trend_factor
+        (cat heavier than ideal → factor < 1 → less food; lighter → more food)
+      - Else:
+          portion = avg_weight × food_per_kg
+
     Result clamped to [20, 150] grams.
     """
     conn = getConnection()
     cur = conn.cursor()
 
-    # 1. Pet profile formula
-    cur.execute("SELECT weight_kg, food_per_kg FROM pets WHERE id = %s", (pet_id,))
+    cur.execute(
+        "SELECT weight_kg, food_per_kg, ideal_weight_kg FROM pets WHERE id = %s",
+        (pet_id,)
+    )
     pet_row = cur.fetchone()
-    if pet_row and pet_row[0] is not None and pet_row[1] is not None:
-        portion = float(pet_row[0]) * float(pet_row[1])
-        conn.close()
-        return round(max(20.0, min(150.0, portion)), 1)
+    weight_kg      = float(pet_row[0]) if pet_row and pet_row[0] is not None else None
+    food_per_kg    = float(pet_row[1]) if pet_row and pet_row[1] is not None else 60.0
+    ideal_weight_kg = float(pet_row[2]) if pet_row and pet_row[2] is not None else None
 
-    # 2. Historical average
     cur.execute(
         """
-        SELECT portion_grams FROM feed_log
-        WHERE pet_id = %s AND portion_grams IS NOT NULL
+        SELECT weight_kg_at_feed FROM feed_log
+        WHERE pet_id = %s AND weight_kg_at_feed IS NOT NULL AND weight_kg_at_feed > 0
         ORDER BY `timestamp` DESC LIMIT 5
         """,
         (pet_id,)
     )
-    rows = cur.fetchall()
+    history = [float(r[0]) for r in cur.fetchall()]
     conn.close()
 
-    valid = [r[0] for r in rows if r[0] is not None and r[0] > 0]
-    if len(valid) >= 3:
-        portion = sum(valid) / len(valid)
+    # Resolve effective weight
+    if len(history) >= 3:
+        avg_weight = sum(history) / len(history)
+    elif weight_kg is not None:
+        avg_weight = weight_kg
     else:
-        # 3. ADC fallback
         portion = 30.0 + (cat_weight_sim / 1023.0) * 50.0
+        return round(max(20.0, min(150.0, portion)), 1)
+
+    # Compute portion
+    if ideal_weight_kg is not None and avg_weight > 0:
+        base_portion  = ideal_weight_kg * food_per_kg
+        trend_factor  = ideal_weight_kg / avg_weight
+        trend_factor  = max(0.75, min(1.25, trend_factor))
+        portion = base_portion * trend_factor
+    else:
+        portion = avg_weight * food_per_kg
 
     return round(max(20.0, min(150.0, portion)), 1)
 
+# Returns average dispensed portion over selected window
 def getAvgPortion(hours=24):
     conn = getConnection()
     cur = conn.cursor()
@@ -358,7 +446,8 @@ def getAvgPortion(hours=24):
     conn.close()
     return float(row[0]) if row and row[0] is not None else None
 
-# --- Command queue ---
+# ===========Command Queue===========
+# Queues manual command for serial bridge dispatch
 
 def queueCommand(command):
     conn = getConnection()
@@ -367,6 +456,7 @@ def queueCommand(command):
     conn.commit()
     conn.close()
 
+# Pops and deletes queued commands in FIFO order
 def popPendingCommands():
     conn = getConnection()
     cur = conn.cursor()

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 20, 2026 at 12:28 PM
+-- Generation Time: Apr 19, 2026 at 05:39 PM
 -- Server version: 11.8.6-MariaDB-0+deb13u1 from Debian
 -- PHP Version: 8.4.16
 
@@ -34,7 +34,8 @@ CREATE TABLE `feed_log` (
   `timestamp` datetime DEFAULT current_timestamp(),
   `portion_grams` float DEFAULT NULL,
   `bowl_before` float DEFAULT NULL,
-  `bowl_after` float DEFAULT NULL
+  `bowl_after` float DEFAULT NULL,
+  `weight_kg_at_feed` float DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 -- --------------------------------------------------------
@@ -75,7 +76,8 @@ CREATE TABLE `pets` (
   `camera_label` varchar(50) DEFAULT NULL,
   `pot_target` int(11) NOT NULL DEFAULT 600,
   `weight_kg` float DEFAULT NULL,
-  `food_per_kg` float DEFAULT 60
+  `food_per_kg` float DEFAULT 60,
+  `ideal_weight_kg` float DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 -- --------------------------------------------------------

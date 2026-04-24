@@ -84,8 +84,9 @@
   <div class="panel">
     <p class="form-hint" style="margin-bottom:1rem;">
       Each pet's weight is updated automatically when they visit the feeder (via simulated scale).
-      Set <em>Food/kg</em> to calculate the recommended portion size (grams per kg body weight).
-      Calculated portion = Last Weight × Food/kg.
+      Set <em>Food/kg</em> to define grams of food per kg body weight.
+      Set <em>Ideal Weight</em> so the system can automatically reduce or increase portions to steer toward that target over time.
+      <em>Next Portion</em> is what the system will dispense at the next feeding.
     </p>
     <div class="table-wrap" style="margin-bottom:1.5rem;">
       <table class="data-table">
@@ -93,14 +94,16 @@
           <tr>
             <th>Name</th>
             <th>RFID UID</th>
-            <th>Last Weight</th>
+            <th>Avg Weight</th>
             <th>Food/kg</th>
-            <th>Calc Portion</th>
+            <th>Ideal Weight</th>
+            <th>Trend</th>
+            <th>Next Portion</th>
             <th></th>
           </tr>
         </thead>
         <tbody id="pets-tbody">
-          <tr><td colspan="6">Loading…</td></tr>
+          <tr><td colspan="8">Loading…</td></tr>
         </tbody>
       </table>
     </div>

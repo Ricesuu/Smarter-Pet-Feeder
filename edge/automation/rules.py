@@ -1,9 +1,13 @@
 from database.db import getSettings
 
+# ===========Rule State===========
 _lastFanState = None
 
+# ===========Automation Rules===========
+# Evaluates live sensor data and controls fan based on humidity threshold
 def evaluateRules(data, sendCommand):
     global _lastFanState
+
     settings = getSettings()
     humThreshold = float(settings.get('humidity_threshold', 70))
 
@@ -11,4 +15,8 @@ def evaluateRules(data, sendCommand):
 
     if shouldFanBeOn != _lastFanState:
         _lastFanState = shouldFanBeOn
-        sendCommand('FAN_ON' if shouldFanBeOn else 'FAN_OFF')
+
+        if shouldFanBeOn:
+            sendCommand('FAN_ON')
+        else:
+            sendCommand('FAN_OFF')
